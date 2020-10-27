@@ -21,7 +21,8 @@ components:
     c:
       allOf:
       - $ref: '#/components/schemas/b'
-      - properties:
+      - type: object
+        properties:
           name:
             type: 'string'
   parameters:

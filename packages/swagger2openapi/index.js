@@ -307,9 +307,12 @@ function fixupRefs(obj, key, state) {
             }
             else if (inSchema && (options.refSiblings === 'allOf')) {
                 delete obj.$ref;
-                if (typeof obj.description === 'string') {
-                    state.parent[state.pkey] = { allOf: [ { $ref: tmpRef } ], description: obj.description };
+                // eslint-disable-next-line no-eq-null
+                if (obj.type == null){
+                    // if $ref sibling is not a schema, put its properties next to allOf
+                    state.parent[state.pkey] = Object.assign({ allOf: [ { $ref: tmpRef } ]}, obj);
                 } else {
+                    // only schema are allowed in allOf array
                     state.parent[state.pkey] = { allOf: [ { $ref: tmpRef }, obj ]};
                 }
             }
@@ -317,7 +320,6 @@ function fixupRefs(obj, key, state) {
                 state.parent[state.pkey] = { $ref: tmpRef };
             }
         }
-
     }
     if ((key === 'x-ms-odata') && (typeof obj[key] === 'string') && (obj[key].startsWith('#/'))) {
         let keys = obj[key].replace('#/definitions/', '').replace('#/components/schemas/','').split('/');
