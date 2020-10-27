@@ -183,7 +183,7 @@ function fixUpSubSchemaExtensions(schema,parent) {
 }
 
 function fixUpSchema(schema,options) {
-    sw.walkSchema(schema,{},{},function(schema,parent,state){
+    sw.walkSchema(schema,{},{},function(schema,parent,state) {
         fixUpSubSchemaExtensions(schema,parent);
         fixUpSubSchema(schema,parent,options);
     });
@@ -307,13 +307,19 @@ function fixupRefs(obj, key, state) {
             }
             else if (inSchema && (options.refSiblings === 'allOf')) {
                 delete obj.$ref;
-                state.parent[state.pkey] = { allOf: [ { $ref: tmpRef }, obj ]};
+                // eslint-disable-next-line no-eq-null
+                if (obj.type == null){
+                    // if $ref sibling is not a schema, put its properties next to allOf
+                    state.parent[state.pkey] = Object.assign({ allOf: [ { $ref: tmpRef } ]}, obj);
+                } else {
+                    // only schema are allowed in allOf array
+                    state.parent[state.pkey] = { allOf: [ { $ref: tmpRef }, obj ]};
+                }
             }
             else { // remove, or not 'preserve' and not in a schema
                 state.parent[state.pkey] = { $ref: tmpRef };
             }
         }
-
     }
     if ((key === 'x-ms-odata') && (typeof obj[key] === 'string') && (obj[key].startsWith('#/'))) {
         let keys = obj[key].replace('#/definitions/', '').replace('#/components/schemas/','').split('/');
@@ -1400,7 +1406,7 @@ function convertObj(swagger, options, callback) {
             fixPaths(options.openapi, options, reject);
 
             resolver.optionalResolve(options) // is a no-op if options.resolve is not set
-            .then(function(){
+            .then(function() {
                 if (options.direct) {
                     return resolve(options.openapi);
                 }
@@ -1408,7 +1414,7 @@ function convertObj(swagger, options, callback) {
                     return resolve(options);
                 }
             })
-            .catch(function(ex){
+            .catch(function(ex) {
                 console.warn(ex);
                 reject(ex);
             });
@@ -1439,7 +1445,7 @@ function convertObj(swagger, options, callback) {
         // we want the new and existing properties to appear in a sensible order. Not guaranteed
         openapi = Object.assign(openapi, cclone(swagger));
         delete openapi.swagger;
-        recurse(openapi, {}, function(obj, key, state){
+        recurse(openapi, {}, function(obj, key, state) {
             if ((obj[key] === null) && (!key.startsWith('x-')) && key !== 'default' && (state.path.indexOf('/example') < 0)) delete obj[key]; // this saves *so* much grief later
         });
 
@@ -1546,7 +1552,7 @@ function convertObj(swagger, options, callback) {
         delete openapi.securityDefinitions;
 
         resolver.optionalResolve(options) // is a no-op if options.resolve is not set
-        .then(function(){
+        .then(function() {
             main(options.openapi, options);
             if (options.direct) {
                 resolve(options.openapi);
@@ -1555,7 +1561,7 @@ function convertObj(swagger, options, callback) {
                 resolve(options);
             }
         })
-        .catch(function(ex){
+        .catch(function(ex) {
             console.warn(ex);
             reject(ex);
         });

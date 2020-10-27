@@ -22,3 +22,9 @@ definitions:
     description: a
   b:
     type: integer
+  c:
+    $ref: '#/definitions/b'
+    type: object
+    properties:
+      name:
+        type: 'string'
